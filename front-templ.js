@@ -1,18 +1,11 @@
-<!doctype html>
-<html>
-<head>
-<meta charset="utf-8">
-<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
-<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<title>Metaphoric</title>
-<link href="https://www.jqueryscript.net/css/jquerysctipttop.css" rel="stylesheet" type="text/css">
-<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css" integrity="sha384-9aIt2nRpC12Uk9gS9baDl411NQApFmC26EwAOH8WgZl5MYYxFfc+NcPb1dKGj7Sk" crossorigin="anonymous">
-<script src="js/cardlib.js"></script>
+
+{% extends "base.html" %}
+{% block heads %}
+    <script src="static/js/cardlib.js"></script>
 <style>
-  body { /*font-family: 'Roboto Condensed';*/ background: url('back.jpg');}
+  body { /*font-family: 'Roboto Condensed';*/ background: url('static/common/back.jpg');}
 
 .dcard-area {
-  padding-top: 10px;
   height: 1000px;
   margin-top: 50px auto;
   margin-bottom: 100px auto;
@@ -24,7 +17,7 @@
 }
 .draggable {
   width: 215px;
-  height: 310px;  
+  height: 310px;
   border-radius: 10px;
   margin: 0px 10px 10px 0px;
   float: left;
@@ -39,131 +32,124 @@
 
 
 </style>
-</head>
+{% endblock %}
 
-<body>
+{% block page_content %}
 
-  <nav class="navbar navbar-dark navbar-expand-md fixed-top" >
 
-    <div class="mx-auto">
-        <a class="navbar-brand mx-auto " href="{{ url_for('common.main_page') }}"><h3><b>Metaphoric</b></h3></a>
-    </div>
-    <div class="navbar-collapse">
-        <ul class="navbar-nav ml-auto">
+<br>
+<br>
+<br>
+<br>
+{% load static %}
 
-            <li class="nav-item">
-                <a class="nav-link" href="{{ url_for('common.profile_page') }}"><h4><b>Профиль</b></h4></a>
-            </li>
-
-            <li class="nav-item">
-                <a class="nav-link" href="{{ url_for('auth.login_page') }}"><h4><b>Авторизоваться</b></h4></a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="{{ url_for('auth.signup_page') }}"><h4><b>Регистрация</b></h4></a>
-            </li>
-
-            <li class="nav-item">
-                <a class="nav-link" href="{{ url_for('auth.logout_page') }}"><h4><b>Выход</b></h4></a>
-            </li>
-
-        </ul>
-    </div>
-</nav>
 
  <div class="row"><br><br><br><br><br></div>
 
 
  <div class="row">
-  <div class="col-1 ml-5 mr-5"><img id="deck" src="cb.png" style="border-radius: 10px; width: 215px; height: 310px;"><br><br><img id="flower" src="flower.svg" height="300" width="300" /></div>
-  <div class="col-9 ml-5"><div id="deck_prev"></div><div id="dc_area" class="dcard-area"></div></div><div class="col-2"></div> 
+  <div class="col-2 ml-5 mr-0">
+  	<img id="deck" src="static/common/cb.png" style="border-radius: 10px; width: 215px; height: 310px;">
+      <br>
+      <br>
+    <img id="flower" src="static/common/flower.svg" height="300" width="300" />
+  </div>
+  <div class="col-8"><div id="dc_area" class="dcard-area"></div></div>
+  <div class="col-2"></div>
  </div>
  <div class="row"><br><br><br><br><br></div>
 
+{% for card in cards %}
+      <div id="{{ card.title }}"  style="background-image: url( '{% static card.image %}' );"></div><br>
+{% endfor %}
 
-<script src="https://code.jquery.com/jquery-1.12.4.min.js" integrity="sha384-nvAa0+6Qg9clwYCGGPpDQLVpLNn0fRaROjHqs13t4Ggj3Ez50XnGQqc/r8MhnRDZ" crossorigin="anonymous"></script>
-<script src="dist/draggabilly.pkgd.js"></script>
+<br>
+<br>
+<br>
+<br>
+{% endblock %}
 
-<script>
-  // external js: draggabilly.pkgd.js
+{% block scripts %}
+<script src="static/js/draggabilly.pkgd.js"></script>
+  <script>
 
-const MAX_CARDS = 9;
+const MAX_CARDS = 5;
 const CONT = false;
+let ENLISTED = 0;
 let CARDS_IN_PREV = new Array();
+let CARDS_IN_GAME = new Array();
 
 $(document).ready( function() {
   var $draggables = $('.draggable').draggabilly({containment: CONT, grid: [ 10, 10 ]});
 });
 
 
-function click_to_area(e){
-  
+function dcToArea(item){
+
   let card = CARDS_IN_PREV.pop();
-  let txt = document.getElementById('deck_prev').innerHTML;
-  document.getElementById('dc_area').innerHTML += `<div>${txt}</div>`;
-  if (CARDS_IN_PREV.length === 0) {  // in preview no more
-    document.getElementById('deck_prev').innerHTML="";
+  item.setAttribute('prev', '0');
 
-    // add listeners
-    for (let el of document.getElementsByClassName("draggable")) el.addEventListener('dblclick', function (e) {back_change(el);});
-    $(document).ready( function() {var $draggables = $('.draggable').draggabilly({containment: CONT, grid: [ 10, 10 ]}); });
-    return ;
-  };
+  CARDS_IN_GAME.push(card);
 
-  //if left more in prev
-  card = CARDS_IN_PREV.pop();
-  document.getElementById('deck_prev').innerHTML = `<div id="${card}" class="draggable" cb="" style="background-image: url('deck/${card.slice(2)}.gif');"></div>`;
-  CARDS_IN_PREV.push(card);
-  
   // add listeners
   $(document).ready( function() {var $draggables = $('.draggable').draggabilly({containment: CONT, grid: [ 10, 10 ]}); });
   for (let el of document.getElementsByClassName("draggable")) el.addEventListener('dblclick', function (e) {back_change(el);});
-  
+
 }
 
 function relist(){
   if (CARDS_IN_PREV.length === 0) return ;
-  CARDS_IN_PREV = new Array();
-  document.getElementById('deck_prev').innerHTML=""; 
-  document.getElementById('fdeck').outerHTML='<img id="deck" src="cb.png" style="border-radius: 10px; width: 215px; height: 310px;">';
+  ENLISTED = CARDS_IN_GAME.length;
+  for (let el of CARDS_IN_PREV) {
+   dc = document.getElementById(`${el}`);
+   if (dc != null) dc.outerHTML="";
+  }
+  document.getElementById('fdeck').outerHTML='<img id="deck" src="static/common/cb.png" style="border-radius: 10px; width: 215px; height: 310px;">';
   document.getElementById('deck').addEventListener('click', function (e) {deckClick();});
+  
 }
 
 // click on deck
 function deckClick(){
-  let cards_on_board = {};
-  for (let item of document.getElementById('dc_area').getElementsByClassName("draggable")) {cards_on_board[item.id]=item.style.backgroundImage;}
-  if (MAX_CARDS === (Object.keys(cards_on_board).length + CARDS_IN_PREV.length)) {
-   document.getElementById('deck_prev').innerHTML=""; CARDS_IN_PREV = new Array();
-   return ; }
+	let newcard;
+	if (MAX_CARDS === (CARDS_IN_GAME.length + CARDS_IN_PREV.length)) {
+		if  (CARDS_IN_PREV.length != 0) {
+			newcard = CARDS_IN_PREV.shift();  // get card
+		} else { return ; }  // no new card
+	} else {
+		//  get random card
+		newcard = `dc${getRandomInt(1, MAX_CARDS)}`;
+	    while (CARDS_IN_GAME.includes(newcard) || CARDS_IN_PREV.includes(newcard)) newcard = `dc${getRandomInt(1, MAX_CARDS)}`;
+	}
 
-  //  get random card
-  let rnum = getRandomInt(1, MAX_CARDS); let newcard = `dc${rnum}`;
-  while (Object.keys(cards_on_board).includes(newcard) || CARDS_IN_PREV.includes(newcard)) {rnum = getRandomInt(1, MAX_CARDS); newcard = `dc${rnum}`;}
-  let deck_prev = document.getElementById('deck_prev');
-  CARDS_IN_PREV.push(newcard);
-
-  deck_prev.innerHTML =`<div id="${newcard}" class="draggable" cb="" style="background-image: url('deck/${rnum}.gif');"></div>`;
-  if (MAX_CARDS === (Object.keys(cards_on_board).length + CARDS_IN_PREV.length)) {
-    document.getElementById('deck').outerHTML='<img id="fdeck" src="flower.svg" height="300" width="300" />';
-    document.getElementById('fdeck').addEventListener('click', function (e) {relist();});
-  }
-
-  // add listeners
-  $(document).ready( function() {var $draggables = $('.draggable').draggabilly({containment: CONT, grid: [ 10, 10 ]}); });  
+	ENLISTED += 1;
+	CARDS_IN_PREV.push(newcard);
+	document.getElementById('dc_area').innerHTML += `<div id="${newcard}" class="draggable" prev="1" cb="" style="background-image: url('static/${newcard.slice(2)}.gif');"></div>`;
+    if (MAX_CARDS === ENLISTED) {
+      document.getElementById('deck').outerHTML='<img id="fdeck" src="static/common/flower.svg" height="300" width="300" />';
+      document.getElementById('fdeck').addEventListener('click', function (e) {relist();});
+   }
+    // add listeners
+    $(document).ready( function() {var $draggables = $('.draggable').draggabilly({containment: CONT, grid: [ 10, 10 ]}); });
 }
 
 function reset(){
-  CARDS_IN_PREV = new Array();
-  document.getElementById('deck_prev').innerHTML="";
-  document.getElementById('dc_area').innerHTML="";
-  document.getElementById('fdeck').outerHTML='<img id="deck" src="cb.png" style="border-radius: 10px; width: 215px; height: 310px;">';
-  document.getElementById('deck').addEventListener('click', function (e) {deckClick();});
+	ENLISTED = 0;
+	CARDS_IN_PREV = new Array();
+	CARDS_IN_GAME = new Array();
+	document.getElementById('dc_area').innerHTML="";
+	let fdeck = document.getElementById('fdeck');
+	if (fdeck != null) {
+		fdeck.outerHTML='<img id="deck" src="static/common/cb.png" style="border-radius: 10px; width: 215px; height: 310px;">';
+		document.getElementById('deck').addEventListener('click', function (e) {deckClick();});
+	}
 }
 
-function make_upper(item){
-  
+function updater(item){
+	if (item.getAttribute('prev') === "1"){ dcToArea(item);}
+
   let card_list = document.getElementById('dc_area').getElementsByClassName("draggable");
-  
+
   let card_arr = new Array();
   for (let el of card_list) {if (el.id!=item.id) card_arr.push(el);}
   document.getElementById('dc_area').innerHTML = "";
@@ -176,7 +162,7 @@ function make_upper(item){
 
 function back_change(item){
   let actual_value = item.getAttribute('cb');
-  if (actual_value === ""){item.setAttribute('cb', item.style.backgroundImage);  item.style.backgroundImage = "url('cb.png')"; }
+  if (actual_value === ""){item.setAttribute('cb', item.style.backgroundImage);  item.style.backgroundImage = "url('static/common/cb.png')"; }
   else { item.style.backgroundImage = actual_value; item.setAttribute('cb', "");}
   // add listeners
   $(document).ready( function() {var $draggables = $('.draggable').draggabilly({containment: CONT, grid: [ 10, 10 ]}); });
@@ -185,18 +171,8 @@ function back_change(item){
 
 // add listeners
 document.getElementById('deck').addEventListener('click', function (e) {deckClick();});
-document.getElementById('deck_prev').addEventListener('click', function (e) {click_to_area(e);});
 document.getElementById('flower').addEventListener('click', function (e) {reset();});
 
 for (let el of document.getElementsByClassName("draggable")) {el.addEventListener('dblclick', function (e) {back_change(el);})};
-
-
-
-
 </script>
-
-
-<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js" integrity="sha384-OgVRvuATP1z7JjHLkuOU7Xw704+h835Lr+6QL9UvYjZE3Ipu6Tp75j7Bh/kR0JKI" crossorigin="anonymous"></script>
-</body>
-</html>
-
+{% endblock %}
