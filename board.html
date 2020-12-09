@@ -1,0 +1,84 @@
+{% extends "base_logged.html" %}
+{% block heads %}
+    <link rel="stylesheet" href="static/css/board.css">
+<style>
+    body { background: url('static/common/back.jpg');}
+</style>
+{% endblock %}
+{%block profile_board %}
+<li class="nav-item">
+                <a class="nav-link" href="/profile"><h4><b>Профиль</b></h4></a>
+            </li>
+{% endblock %}
+
+{% block page_content %}
+
+<br>
+<br>
+<br>
+<br>
+{% load static %}
+
+ <div class="row"><br><br><br><br><br></div>
+ <div class="row"><div class="col-5 ml-5 mr-0"></div><div id="mixer" class="col-2 ml-5 mr-0" hidden="1"><h1 style="color: white; font-style: italic;">перемешиваю</h1></div><div class="col-5 ml-5 mr-0"></div></div>
+
+ <div class="row">
+  <div class="col-2 ml-5 mr-0">
+  	<img id="deck" data-toggle="tooltip" src="static/common/cb.png" style="border-radius: 10px; width: 215px; height: 310px;" title="Листайте колоду 'взакрытую' левой кнопкой мыши. Чтобы видеть карту - листайте правой">
+      <br>
+      <br>
+      <br>
+      <br>
+      <br>
+    <img id="flower" data-toggle="tooltip" data-placement="top" src="static/common/flower.svg" height="300" width="300" title="Сбросить карты и перемешать колоду"/>
+  </div>
+  <div class="col-8"><div id="dc_area" class="dcard-area"></div></div>
+  <div class="col-2"></div>
+ </div>
+ <div class="row"><br><br><br><br><br></div>
+
+<br>
+<br>
+<br>
+<br>
+{% endblock %}
+
+{% block scripts %}
+<script src="static/js/9/cardlib.js"></script>
+<script src="static/js/draggabilly.pkgd.js"></script>
+<script>
+
+$(function () { $('[data-toggle="tooltip"]').tooltip('show'); });
+$(function () { $('[data-toggle="tooltip"]').on('mouseover', function () { $(this).tooltip('disable'); $(this).tooltip('hide'); })});
+
+const MAX_CARDS = {{ max_cards }};
+const CONT = false;
+let ENLISTED = 0;
+let TOOLTIP_FIRST_CARD = 0;
+let TOOLTIP_FIRST_CARD_MOVED = 0;
+let CARDS_IN_PREV = new Array();
+let CARDS_IN_GAME = new Array();
+
+$(document).ready( function() {
+  var $draggables = $('.draggable').draggabilly({containment: CONT, grid: [ 10, 10 ]});
+});
+
+async function reportCard(item){
+  data = {"id": `${item.id}`, "top": `${item.style.top}`, "left": `${item.style.left}`, "cb": `${item.getAttribute('cb')}`};
+  console.log(item.style.left);
+  //aitem = document.getElementById(`${item.id}`);
+  //aitem.style.left = '0px';
+  //aitem.style.top = '0px';
+  console.log(item.style.left);
+  await fetch("sess", {method: "POST", headers:{"X-CSRFToken": '{{ csrf_token }}'}, body: JSON.stringify(data)});
+}
+
+// add listeners
+document.getElementById('deck').addEventListener('click', function (e) {deckClick(e, 1);});
+document.getElementById('deck').addEventListener('contextmenu', function (e) { deckClick(e, 0);});
+document.getElementById('flower').addEventListener('click', function (e) {reset(); document.getElementById('mixer').hidden=0; shake(0, e);});
+
+for (let el of document.getElementsByClassName("draggable")) {el.addEventListener('dblclick', function (e) { back_change(e, el);})};
+for (let el of document.getElementsByClassName("draggable")) {el.addEventListener('contextmenu', function (e) {cardFlip(e, el);})};
+</script>
+{% endblock %}
