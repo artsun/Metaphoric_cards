@@ -26,7 +26,7 @@ window.relist = function relist(){
    dc = document.getElementById(`${el}`);
    if (dc != null) dc.outerHTML="";
   }
-  document.getElementById('fdeck').outerHTML='<img id="deck" src="static/common/cb.png" style="border-radius: 10px; width: 215px; height: 310px;">';
+  document.getElementById('fdeck').outerHTML='<img id="deck" src="/static/common/cb.png" style="border-radius: 10px; width: 215px; height: 310px;">';
   document.getElementById('deck').addEventListener('click', function (e) {deckClick(e, 1);});
   document.getElementById('deck').addEventListener('contextmenu', function (e) { deckClick(e, 0);});
 }
@@ -49,10 +49,10 @@ window.deckClick = function deckClick(e, rclick){
   CARDS_IN_PREV.push(newcard);
   let nc;
   if (TOOLTIP_FIRST_CARD === 0){  // tooltip
-    nc = `<div id="${newcard}" data-toggle="tooltip" class="draggable" prev="1" cb="" fl="" style="background-image: url('static/${newcard.slice(2)}.gif');" title="Потяните карту левой кнопкой мыши"></div>`;    
+    nc = `<div id="${newcard}" data-toggle="tooltip" class="draggable" prev="1" cb="" fl="" style="background-image: url('/static/${newcard.slice(2)}.gif');" title="Потяните карту левой кнопкой мыши"></div>`;    
     TOOLTIP_FIRST_CARD = newcard;
   } else {
-    nc = `<div id="${newcard}" class="draggable" prev="1" cb="" fl="" style="background-image: url('static/${newcard.slice(2)}.gif');"></div>`;
+    nc = `<div id="${newcard}" class="draggable" prev="1" cb="" fl="" style="background-image: url('/static/${newcard.slice(2)}.gif');"></div>`;
   }
   document.getElementById('dc_area').innerHTML += nc;
   if (rclick===1) { back_change(e, document.getElementById(`${newcard}`));} else {e.preventDefault();}
@@ -62,7 +62,7 @@ window.deckClick = function deckClick(e, rclick){
 
   
   if (MAX_CARDS === ENLISTED) {
-    document.getElementById('deck').outerHTML='<img id="fdeck" src="static/common/flower.svg" height="300" width="300" />';
+    document.getElementById('deck').outerHTML='<img id="fdeck" src="/static/common/flower.svg" height="300" width="300" />';
     document.getElementById('fdeck').addEventListener('click', function (e) {relist();});
   }
     // add listeners
@@ -78,6 +78,7 @@ window.shake = function shake(n, e){
 }
 
 window.reset = function reset(){
+  reportFlag({'reset': 1});
   $(function () { $('[data-toggle="tooltip"]').tooltip('hide'); });  // hide all tooltips
   ENLISTED = 0;
   CARDS_IN_PREV = new Array();
@@ -85,7 +86,7 @@ window.reset = function reset(){
   document.getElementById('dc_area').innerHTML="";
   let fdeck = document.getElementById('fdeck');
   if (fdeck != null) {
-    fdeck.outerHTML='<img id="deck" src="static/common/cb.png" style="border-radius: 10px; width: 215px; height: 310px;">';
+    fdeck.outerHTML='<img id="deck" src="/static/common/cb.png" style="border-radius: 10px; width: 215px; height: 310px;">';
     document.getElementById('deck').addEventListener('click', function (e) {deckClick(e, 1);});
     document.getElementById('deck').addEventListener('contextmenu', function (e) { deckClick(e, 0);});
   }
@@ -120,7 +121,7 @@ window.updater = function updater(item){
 
 window.back_change = function back_change(e, item){
   let actual_value = item.getAttribute('cb');
-  if (actual_value === ""){item.setAttribute('cb', item.style.backgroundImage);  item.style.backgroundImage = "url('static/common/cb.png')"; }
+  if (actual_value === ""){item.setAttribute('cb', item.style.backgroundImage);  item.style.backgroundImage = "url('/static/common/cb.png')"; }
   else { item.style.backgroundImage = actual_value; item.setAttribute('cb', "");}
   // add listeners
   $(document).ready( function() {var $draggables = $('.draggable').draggabilly({containment: CONT, grid: [ 10, 10 ]}); });
@@ -130,6 +131,6 @@ window.cardFlip = function cardFlip(e, el){
   e.preventDefault();
   if (el.getAttribute('cb') != "") return;  // if back_changed -> no flip
   let actual_value = el.getAttribute('fl');
-  if (actual_value === ""){el.setAttribute('fl', el.style.backgroundImage);  el.style.backgroundImage = `url(static/flipped/${el.id.slice(2)}.gif)`; }
+  if (actual_value === ""){el.setAttribute('fl', el.style.backgroundImage);  el.style.backgroundImage = `url(/static/flipped/${el.id.slice(2)}.gif)`; }
   else { el.style.backgroundImage = actual_value; el.setAttribute('fl', "");}
 }
