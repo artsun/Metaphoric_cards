@@ -1,8 +1,8 @@
-{% extends "base_logged.html" %}
+{% extends "base.html" %}
 {% block heads %}
-    <link rel="stylesheet" href="static/css/board.css">
+    <link rel="stylesheet" href="/static/css/board.css">
 <style>
-    body { background: url('static/common/back.jpg');}
+    body { background: url('/static/common/back.jpg');}
 </style>
 {% endblock %}
 {%block profile_board %}
@@ -24,13 +24,13 @@
 
  <div class="row">
   <div class="col-2 ml-5 mr-0">
-  	<img id="deck" data-toggle="tooltip" src="static/common/cb.png" style="border-radius: 10px; width: 215px; height: 310px;" title="Листайте колоду 'взакрытую' левой кнопкой мыши. Чтобы видеть карту - листайте правой">
+  	<img id="deck" data-toggle="tooltip" src="/static/common/cb.png" style="border-radius: 10px; width: 215px; height: 310px;" title="Листайте колоду 'взакрытую' левой кнопкой мыши. Чтобы видеть карту - листайте правой">
       <br>
       <br>
       <br>
       <br>
       <br>
-    <img id="flower" data-toggle="tooltip" data-placement="top" src="static/common/flower.svg" height="300" width="300" title="Сбросить карты и перемешать колоду"/>
+    <img id="flower" data-toggle="tooltip" data-placement="top" src="/static/common/flower.svg" height="300" width="300" title="Сбросить карты и перемешать колоду"/>
   </div>
   <div class="col-8"><div id="dc_area" class="dcard-area"></div></div>
   <div class="col-2"></div>
@@ -44,8 +44,8 @@
 {% endblock %}
 
 {% block scripts %}
-<script src="static/js/9/cardlib.js"></script>
-<script src="static/js/draggabilly.pkgd.js"></script>
+<script src="/static/js/2/cardlib.js"></script>
+<script src="/static/js/draggabilly.pkgd.js"></script>
 <script>
 
 $(function () { $('[data-toggle="tooltip"]').tooltip('show'); });
@@ -55,23 +55,58 @@ const MAX_CARDS = {{ max_cards }};
 const CONT = false;
 let ENLISTED = 0;
 let TOOLTIP_FIRST_CARD = 0;
+let IS_PROF = {{ is_prof }};
 let TOOLTIP_FIRST_CARD_MOVED = 0;
 let CARDS_IN_PREV = new Array();
 let CARDS_IN_GAME = new Array();
+
+let START_CARDS = [{% for pos in positions %} ["{{pos.card_id}}", "{{pos.top}}", "{{pos.left}}", "{{pos.cb}}"], {% endfor %}];
 
 $(document).ready( function() {
   var $draggables = $('.draggable').draggabilly({containment: CONT, grid: [ 10, 10 ]});
 });
 
-async function reportCard(item){
-  data = {"id": `${item.id}`, "top": `${item.style.top}`, "left": `${item.style.left}`, "cb": `${item.getAttribute('cb')}`};
-  console.log(item.style.left);
-  //aitem = document.getElementById(`${item.id}`);
-  //aitem.style.left = '0px';
-  //aitem.style.top = '0px';
-  console.log(item.style.left);
-  await fetch("sess", {method: "POST", headers:{"X-CSRFToken": '{{ csrf_token }}'}, body: JSON.stringify(data)});
+function setCardPosition(card_id, top, left, cb){
+  aitem = document.getElementById(`${card_id}`);
+  if (aitem === null) {addCard(card_id, top, left, cb); aitem = document.getElementById(`${card_id}`);}
+  aitem.style.top = top;
+  aitem.style.left = left;
 }
+
+async function syncCardsPositions(){
+  if (IS_PROF===0) {return;}
+  let response = await fetch("{{session_id}}/input");
+  let res = await response.json();
+  if (res['res'].length===0){
+    reset();
+  } else {
+    for (let el of res['res']) {setCardPosition(el['card_id'], el['top'], el['left'], "");}
+  }
+  setTimeout(syncCardsPositions, 2000);
+}
+
+async function reportCard(item){
+  if (IS_PROF===1){return;}  // dont send id is prof
+  data = {"id": `${item.id}`, "top": `${item.style.top}`, "left": `${item.style.left}`, "cb": `${item.getAttribute('cb')}`};
+  await fetch("{{session_id}}/input", {method: "POST", headers:{"X-CSRFToken": '{{ csrf_token }}'}, body: JSON.stringify(data)});
+}
+
+async function reportFlag(data){
+  await fetch("{{session_id}}/input", {method: "POST", headers:{"X-CSRFToken": '{{ csrf_token }}'}, body: JSON.stringify(data)});
+}
+
+function addCard(card_id, top, left, cb){
+  nc = `<div id="${card_id}" class="draggable" prev="0" cb="${cb}" fl="" style="background-image: url('/static/${card_id.slice(2)}.gif');"></div>`;
+  document.getElementById('dc_area').innerHTML += nc;
+  CARDS_IN_GAME.push(card_id);
+  ENLISTED +=1;
+}
+
+function startPositions(){
+  for (let el of START_CARDS) {setCardPosition(el[0], el[1], el[2], el[3]);}
+}
+
+startPositions();
 
 // add listeners
 document.getElementById('deck').addEventListener('click', function (e) {deckClick(e, 1);});
@@ -80,5 +115,7 @@ document.getElementById('flower').addEventListener('click', function (e) {reset(
 
 for (let el of document.getElementsByClassName("draggable")) {el.addEventListener('dblclick', function (e) { back_change(e, el);})};
 for (let el of document.getElementsByClassName("draggable")) {el.addEventListener('contextmenu', function (e) {cardFlip(e, el);})};
+
+syncCardsPositions();
 </script>
 {% endblock %}
